@@ -3,7 +3,11 @@
 #define likely(x)       __builtin_expect((x),1)
 #define unlikely(x)     __builtin_expect((x),0)
 typedef unsigned short uint16;
-typedef long long  int64_t;
+#if defined(__linux__)
+	typedef long int64_t;
+#elif defined(__APPLE__) && defined(__MACH__)
+	typedef long long int64_t;
+#endif
 
 
 static inline int64_t atoul_12(const char * const s){
