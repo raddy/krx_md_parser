@@ -137,7 +137,7 @@ cdef bbos_to_df(bbos dat):
             packet_info[j][20] = dat[i].src_ip
             j+=1
     df =  pd.DataFrame(packet_info,index=times,columns=packet_info.dtype.names)
-    return df.query('index>0')
+    return df[df.index>0]
 
 @cython.cdivision(True)
 @cython.boundscheck(False)
