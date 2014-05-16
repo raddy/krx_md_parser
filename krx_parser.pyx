@@ -52,6 +52,52 @@ cdef extern from "krxparser.cpp":
 
 @cython.cdivision(True)
 @cython.boundscheck(False)
+def fix_a3s(df):
+    cdef:
+        dict last_info = {}
+        int a3_count = 0
+        int a3_violations = 0
+        long tradeprice,tradesize
+        long dlen = df.shape[0],i
+        np.ndarray[object,ndim=1] symbols = df.symbol.values
+        np.ndarray[object,ndim=1] msg_types = df.msg_type.values
+        np.ndarray[long,ndim=1] tradeprices = df.tradeprice.values.astype(long)
+        
+
+        np.ndarray[long,ndim=2] data = df.ix[:,['bid1','ask1','bidsize1','asksize1','bid2','ask2','bisize2','asksize2']].values.astype(long)
+
+    for 0 <= i < dlen:
+        if msg_types[i] == "A3":
+            a3_count+=1
+            if not last_info.has_key(symbols[i]):
+                a3_violations+=1
+                continue
+            if tradeprices[i]== last_info[symbols[i]][0]: #bid
+                df.bid1.iat[i] = last_info[symbols[i]][0]
+                df.bidsize1.iat[i] = 0
+                df.bid2.iat[i] = last_info[symbols[i]][4]
+                df.bidsize2.iat[i] = last_info[symbols[i]][6]
+                df.ask1.iat[i] = last_info[symbols[i]][1]
+                df.asksize1.iat[i] = last_info[symbols[i]][3]
+                df.ask2.iat[i] = last_info[symbols[i]][5]
+                df.asksize2.iat[i] = last_info[symbols[i]][7]
+            elif tradeprices[i] == last_info[symbols[i]][1]: #ask
+                df.bid1.iat[i] = last_info[symbols[i]][0]
+                df.bidsize1.iat[i] = last_info[symbols[i]][2]
+                df.bid2.iat[i] = last_info[symbols[i]][4]
+                df.bidsize2.iat[i] = last_info[symbols[i]][6]
+                df.ask1.iat[i] = last_info[symbols[i]][1]
+                df.asksize1.iat[i] = 0
+                df.ask2.iat[i] = last_info[symbols[i]][5]
+                df.asksize2.iat[i] = last_info[symbols[i]][7]
+        else:
+            last_info[symbols[i]] = data[i,]
+    print 'Total A3 Messages: ', a3_count, ' || Number of A3 Assumption Violations: ', a3_violations
+    return df
+
+
+@cython.cdivision(True)
+@cython.boundscheck(False)
 cdef bbos_to_df(bbos dat):
     cdef:
         int i =0,j=0, dlen = dat.size()
@@ -124,7 +170,9 @@ def parse_pcap(fn,target,quit):
     cdef MD mymd = read_pcap(fn,target,quit)
     # first rip the MD out of the pcap
     df = (bbos_to_df(mymd.tick_data))
+    print 'Fixing A3s...'
+    ndf = fix_a3s(df)
     # now go back through and build the expiration dict
     expiry_dict,strike_dict = bbos_to_dicts(mymd.tick_data)
-    return [df,expiry_dict,strike_dict]
+    return [ndf,expiry_dict,strike_dict]
 
