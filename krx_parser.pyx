@@ -73,23 +73,23 @@ def fix_a3s(df):
                 a3_violations+=1
                 continue
             if tradeprices[i]== last_info[symbols[i]][0]: #bid
-                df.bid1.iat[i] = last_info[symbols[i]][0]
-                df.bidsize1.iat[i] = 0
-                df.bid2.iat[i] = last_info[symbols[i]][4]
-                df.bidsize2.iat[i] = last_info[symbols[i]][6]
-                df.ask1.iat[i] = last_info[symbols[i]][1]
-                df.asksize1.iat[i] = last_info[symbols[i]][3]
-                df.ask2.iat[i] = last_info[symbols[i]][5]
-                df.asksize2.iat[i] = last_info[symbols[i]][7]
+                df.bid1.values[i] = last_info[symbols[i]][0]
+                df.bidsize1.values[i] = 0
+                df.bid2.values[i] = last_info[symbols[i]][4]
+                df.bidsize2.values[i] = last_info[symbols[i]][6]
+                df.ask1.values[i] = last_info[symbols[i]][1]
+                df.asksize1.values[i] = last_info[symbols[i]][3]
+                df.ask2.values[i] = last_info[symbols[i]][5]
+                df.asksize2.values[i] = last_info[symbols[i]][7]
             elif tradeprices[i] == last_info[symbols[i]][1]: #ask
-                df.bid1.iat[i] = last_info[symbols[i]][0]
-                df.bidsize1.iat[i] = last_info[symbols[i]][2]
-                df.bid2.iat[i] = last_info[symbols[i]][4]
-                df.bidsize2.iat[i] = last_info[symbols[i]][6]
-                df.ask1.iat[i] = last_info[symbols[i]][1]
-                df.asksize1.iat[i] = 0
-                df.ask2.iat[i] = last_info[symbols[i]][5]
-                df.asksize2.iat[i] = last_info[symbols[i]][7]
+                df.bid1.values[i] = last_info[symbols[i]][0]
+                df.bidsize1.values[i] = last_info[symbols[i]][2]
+                df.bid2.values[i] = last_info[symbols[i]][4]
+                df.bidsize2.values[i] = last_info[symbols[i]][6]
+                df.ask1.values[i] = last_info[symbols[i]][1]
+                df.asksize1.values[i] = 0
+                df.ask2.values[i] = last_info[symbols[i]][5]
+                df.asksize2.values[i] = last_info[symbols[i]][7]
         else:
             last_info[symbols[i]] = data[i,]
     print 'Total A3 Messages: ', a3_count, ' || Number of A3 Assumption Violations: ', a3_violations
