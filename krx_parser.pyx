@@ -66,7 +66,12 @@ def fix_a3s(df):
 
         np.ndarray[long,ndim=2] data = df.ix[:,['bid1','ask1','bidsize1','asksize1','bid2','ask2','bisize2','asksize2']].values.astype(long)
 
+    #bid1 = 0
+    #bid2 = 4
+
     for 0 <= i < dlen:
+        if symbols[i][0]=='K' and symbols[i][2]=='A': #cash product
+            continue
         if msg_types[i] == "A3":
             a3_count+=1
             if not last_info.has_key(symbols[i]):
@@ -90,6 +95,8 @@ def fix_a3s(df):
                 df.asksize1.values[i] = 0
                 df.ask2.values[i] = last_info[symbols[i]][5]
                 df.asksize2.values[i] = last_info[symbols[i]][7]
+            else:
+                a3_violations+=1
         else:
             last_info[symbols[i]] = data[i,]
     print 'Total A3 Messages: ', a3_count, ' || Number of A3 Assumption Violations: ', a3_violations
