@@ -3,7 +3,7 @@
 
 #include "quickutil.h"
 
-static void elw_b7(const char * const s,bool exture_p,top2 &top_md){
+static void elw_b7(const char * const s,short exture_p,top2 &top_md){
 
 	top_md.bid1 =  atoul_9(s+sizeof(char)*(43));
 	top_md.bidsize1 = atoul_12(s+sizeof(char)*(64));

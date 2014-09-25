@@ -4,9 +4,9 @@
 #include "quickutil.h"
 
 //copy pasting is bad for you
-static void commodity_b2(const char * const s,bool exture_p,top2 &top_md){
+static void commodity_b2(const char * const s,short exture_p,top2 &top_md){
 	int offset = 0;
-	if (likely(exture_p))
+	if (likely(exture_p>=1))
 		offset=1;
 
 	top_md.bid1 =  atoul_8(s+sizeof(char)*(123+offset));
@@ -27,9 +27,9 @@ static void commodity_b2(const char * const s,bool exture_p,top2 &top_md){
 	top_md.exchange_time = 0;
 }
 
-static void future_b2(const char * const s,bool exture_p,top2 &top_md){
+static void future_b2(const char * const s,short exture_p,top2 &top_md){
 	int offset = 0;
-	if (likely(exture_p))
+	if (likely(exture_p>=1))
 		offset=1;
 
 	top_md.bid1 =  atoul_5(s+sizeof(char)*(98+offset));
@@ -50,9 +50,9 @@ static void future_b2(const char * const s,bool exture_p,top2 &top_md){
 	top_md.exchange_time = 0;
 }
 
-static void option_b2(const char * const s,bool exture_p,top2 &top_md){
+static void option_b2(const char * const s,short exture_p,top2 &top_md){
 	int offset = 0;
-	if (likely(exture_p))
+	if (likely(exture_p>=1))
 		offset=1;
 
 	top_md.bid1 =  atoul_5(s+sizeof(char)*(84+offset));

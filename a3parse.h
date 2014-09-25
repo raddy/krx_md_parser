@@ -5,10 +5,11 @@
 
 //copy pasting is bad for you
 
-static void commodity_a3(const char * const s,bool exture_p,top2 &top_md){
+static void commodity_a3(const char * const s,short exture_p,top2 &top_md){
 	int offset = 0;
-	if (likely(exture_p))
+	if (likely(exture_p>=1))
 		offset=2;
+
 
 	top_md.bid1 =  0;
 	top_md.bidsize1 = 0;
@@ -30,9 +31,9 @@ static void commodity_a3(const char * const s,bool exture_p,top2 &top_md){
 		top_md.tradesize *= -1;
 }
 
-static void future_a3(const char * const s,bool exture_p,top2 &top_md){
+static void future_a3(const char * const s,short exture_p,top2 &top_md){
 	int offset = 0;
-	if (likely(exture_p))
+	if (likely(exture_p>=1))
 		offset=2;
 
 	top_md.bid1 =  0;
@@ -51,13 +52,15 @@ static void future_a3(const char * const s,bool exture_p,top2 &top_md){
 	top_md.exchange_time = atoul_8(s+sizeof(char)*(33+offset));
 
 	int64_t side = atoul_1(s+sizeof(char)*96);
+	if (exture_p==2)
+		side = atoul_1(s+sizeof(char)*103);
 	if (side == 1)
 		top_md.tradesize *= -1;
 }
 
-static void option_a3(const char * const s,bool exture_p,top2 &top_md){
+static void option_a3(const char * const s,short exture_p,top2 &top_md){
 	int offset = 0;
-	if (likely(exture_p))
+	if (likely(exture_p>=1))
 		offset=2;
 
 	top_md.bid1 =  0;
@@ -76,13 +79,15 @@ static void option_a3(const char * const s,bool exture_p,top2 &top_md){
 	top_md.exchange_time = atoul_8(s+sizeof(char)*(34+offset));
 
 	int64_t side = atoul_1(s+sizeof(char)*83);
+	if (exture_p==2)
+		side = atoul_1(s+sizeof(char)*91);
 	if (side == 1)
 		top_md.tradesize *= -1;
 
 
 }
 
-static void elw_a3(const char * const s,bool exture_p,top2 &top_md){
+static void elw_a3(const char * const s,short exture_p,top2 &top_md){
 
 	top_md.bid1 =  0;
 	top_md.bidsize1 = 0;

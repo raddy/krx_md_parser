@@ -5,11 +5,15 @@
 
 //copy pasting is bad for you
 
-static void commodity_g7(const char * const s,bool exture_p,top2 &top_md){
+static void commodity_g7(const char * const s,short exture_p,top2 &top_md){
 	int quote_offset = 0;
 	int volume_offset = 0;
 	
-	if (likely(exture_p)){
+	if (likely(exture_p==2)){
+		quote_offset = 1;
+		volume_offset =2;
+	}
+	else if(exture_p==1){
 		quote_offset=1;
 		volume_offset = 2;
 	}
@@ -29,7 +33,8 @@ static void commodity_g7(const char * const s,bool exture_p,top2 &top_md){
 	top_md.total_volume = atoul_7(s+sizeof(char)*(97+volume_offset));
 	top_md.exchange_time = atoul_8(s+sizeof(char)*(37+volume_offset));
 
-	int64_t side = atoul_1(s+sizeof(char)*135);
+	
+	int64_t side = atoul_1(s+sizeof(char)*(134+quote_offset));
 	if (side == 1){ //trade was on a BID
 			top_md.tradesize *= -1;
 	}
@@ -37,11 +42,15 @@ static void commodity_g7(const char * const s,bool exture_p,top2 &top_md){
 		
 }
 
-static void future_g7(const char * const s,bool exture_p,top2 &top_md){
+static void future_g7(const char * const s,short exture_p,top2 &top_md){
 	int quote_offset = 0;
 	int volume_offset = 0;
 	
-	if (likely(exture_p)){
+	if (likely(exture_p==2)){
+		quote_offset = 8;
+		volume_offset =2;
+	}
+	else if(exture_p==1){
 		quote_offset=1;
 		volume_offset = 2;
 	}
@@ -61,16 +70,21 @@ static void future_g7(const char * const s,bool exture_p,top2 &top_md){
 	top_md.total_volume = atoul_7(s+sizeof(char)*(75+volume_offset));
 	top_md.exchange_time = atoul_8(s+sizeof(char)*(33+volume_offset));
 
-	int64_t side = atoul_1(s+sizeof(char)*96);
+	
+	int64_t side = atoul_1(s+sizeof(char)*(95+quote_offset));
 	if (side == 1)
 		top_md.tradesize *= -1;
 }
 
-static void option_g7(const char * const s,bool exture_p,top2 &top_md){
+static void option_g7(const char * const s,short exture_p,top2 &top_md){
 	int quote_offset = 0;
 	int volume_offset = 0;
 	
-	if (likely(exture_p)){
+	if (likely(exture_p==2)){
+		quote_offset = 9;
+		volume_offset =2;
+	}
+	else if(exture_p==1){
 		quote_offset=1;
 		volume_offset = 2;
 	}
@@ -90,7 +104,7 @@ static void option_g7(const char * const s,bool exture_p,top2 &top_md){
 	top_md.total_volume = atoul_8(s+sizeof(char)*(62+volume_offset));
 	top_md.exchange_time = atoul_8(s+sizeof(char)*(34+volume_offset));
 
-	int64_t side = atoul_1(s+sizeof(char)*83);
+	int64_t side = atoul_1(s+sizeof(char)*(82+quote_offset));
 	if (side == 1)
 		top_md.tradesize *= -1;
 }

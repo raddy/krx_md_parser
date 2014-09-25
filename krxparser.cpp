@@ -22,6 +22,8 @@
 #define ETHER_TYPE_IP (0x0800)
 #define ETHER_TYPE_8021Q (0x8100)
 
+#define SEP2014 1409529600000000000
+
 #define TH_SYNACK 0x012
 
 void printBBO(const struct top2 &bbo){
@@ -30,7 +32,7 @@ void printBBO(const struct top2 &bbo){
 	std::cout<<bbo.ask1<<std::endl;
 }
 
-int  processUDP(unsigned int & pktNum, const long &ts, const struct ip *ipHdr, int pktLen, struct tick &bbo) {
+int  processUDP(unsigned int & pktNum, const long &ts, const struct ip *ipHdr, int pktLen, struct tick &bbo, short exture_version) {
 	// Get to the data.
 	int ipHdrLen(ipHdr->ip_hl * 4);
 	const struct udphdr *udpHdr((struct udphdr *) ((char *) ipHdr + ipHdrLen));
@@ -51,16 +53,22 @@ int  processUDP(unsigned int & pktNum, const long &ts, const struct ip *ipHdr, i
 	int pktDataLen(pktLen - udpHdrLen - ipHdrLen);
 	const char *pktData(((char *) udpHdr) + udpHdrLen);
 	std::string pktDataStr(pktData, pktDataLen);
-	tick mytick;
 
 	bbo.ts = ts;
+
+	if (ts>SEP2014)
+		exture_version=2;
+	else
+		exture_version=1;
 
 	bbo.src_prt = int64_t(srcPort);
 	bbo.dst_prt = int64_t(destPort);
 	bbo.src_ip = int64_t(ip_source);
 	bbo.dst_ip = int64_t(ip_dest);
 
-	bbo.code = parse_msg(pktDataStr.c_str(),1,bbo.md);
+	bbo.code = parse_msg(pktDataStr.c_str(),exture_version,bbo.md);
+	if (bbo.code == 9)
+		std::cout<<"Found H1\n";
 	return bbo.code;
 }	
 
@@ -71,7 +79,7 @@ class MD{
 };
 
 
-MD read_pcap(std::string inFile,std::string target_ip,int quit_early){
+MD read_pcap(std::string inFile,std::string target_ip,int quit_early, short exture_version){
 	
 	unsigned target = ip_to_int(target_ip.c_str());
 	unsigned their_ip;
@@ -127,7 +135,7 @@ MD read_pcap(std::string inFile,std::string target_ip,int quit_early){
 		
 		if (ipHdr->ip_p == 17) { //UDP BRO
 				//TCP MESSAGE EITHER TO OR FROM OUR TARGET IP
-				msg_type = processUDP(pktNum,raw_time,ipHdr,pktLen,bbo);
+				msg_type = processUDP(pktNum,raw_time,ipHdr,pktLen,bbo,exture_version);
 				if ( msg_type >= 1){
 					//bbos[pktNum] = bbo;
 					md.tick_data.push_back(bbo);

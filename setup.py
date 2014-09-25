@@ -9,6 +9,8 @@ os.environ['ARCHFLAGS'] = "-arch x86_64"
 
 args = sys.argv[1:]
 
+link_args =  ['-stdlib=libstdc++', '-mmacosx-version-min=10.6']
+
 # Make a `cleanall` rule to get rid of intermediate and library files
 if "cleanall" in args:
     print "Deleting cython files..."
@@ -27,6 +29,8 @@ this_dir = os.path.split(cython.__file__)[0]
 extensions = [
     Extension("krx_parser", sourcefiles,
               libraries=['pcap'],language='c++',
+              extra_link_args = link_args,
+              extra_compile_args = link_args,
               include_dirs=[np.get_include(),this_dir])
     ]
 

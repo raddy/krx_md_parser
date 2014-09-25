@@ -48,7 +48,7 @@ cdef extern from "krxparser.cpp":
         pass
     cdef cppclass MD:
         bbos tick_data
-    MD read_pcap(string,string,int)
+    MD read_pcap(string,string,int,int)
 
 @cython.cdivision(True)
 @cython.boundscheck(False)
@@ -151,7 +151,10 @@ cdef bbos_to_df(bbos dat):
 cdef bbos_to_dicts(bbos dat):
     cdef:
         int i =0,j=0, dlen = dat.size()
-    
+        np.ndarray h1s = np.ndarray((dlen,),
+            dtype=[('id','a12'),('otype','i8'),('group_code','i8'),
+            ('buys','i8'),('sells','i8'),('buys_value','i8'),('sells_value','i8')])
+        np.ndarray[long,ndim=1] times = np.zeros(dlen,dtype=long)
     expiration_dict = dict()
     strike_dict = dict()
 
@@ -170,16 +173,33 @@ cdef bbos_to_dicts(bbos dat):
         elif dat[i].code == 4:
             python_code = dat[i].md.symbol
             last_trading_day  = str(dat[i].md.exchange_time)
-            expiration_dict[python_code] = last_trading_day 
-    return expiration_dict,strike_dict
+            expiration_dict[python_code] = last_trading_day
+        elif dat[i].code == 9: #h1
+            times[j] = dat[i].ts
+            h1s[j][0] = dat[i].md.symbol
+            h1s[j][1] = dat[i].md.tradesize
+            h1s[j][2] = dat[i].md.total_volume
+            h1s[j][3] = dat[i].md.bidsize1
+            h1s[j][4] = dat[i].md.asksize1
+            h1s[j][5] = dat[i].md.bid1
+            h1s[j][6] = dat[i].md.ask1
+            j+=1
+    if j!=0:
+        res = pd.DataFrame(h1s,index=times,columns=h1s.dtype.names).ix[:j,:]
+    else:
+        res = pd.DataFrame()
+    return expiration_dict,strike_dict,res
 
-def parse_pcap(fn,target,quit):
-    cdef MD mymd = read_pcap(fn,target,quit)
+def parse_pcap(fn,target,quit,exture_version=2):
+    cdef MD mymd = read_pcap(fn,target,quit,exture_version)
     # first rip the MD out of the pcap
     df = (bbos_to_df(mymd.tick_data))
     print 'Fixing A3s...'
-    ndf = fix_a3s(df)
+    #ndf = fix_a3s(df)
+    ndf = df
     # now go back through and build the expiration dict
-    expiry_dict,strike_dict = bbos_to_dicts(mymd.tick_data)
-    return [ndf,expiry_dict,strike_dict]
+    expiry_dict,strike_dict,h1s = bbos_to_dicts(mymd.tick_data)
+    print h1s.describe()
+    print h1s.tail()
+    return [ndf,expiry_dict,strike_dict,h1s]
 

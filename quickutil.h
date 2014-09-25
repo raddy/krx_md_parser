@@ -9,6 +9,18 @@ typedef unsigned short uint16;
 	typedef long long int64_t;
 #endif
 
+#define MIL 1000000
+#define MILMIL 1000000000000
+
+static inline int64_t atoul_18(const char * const s){
+    return  int64_t(s[0]-'0')*100000*MILMIL
+    		+int64_t(s[1]-'0')*10000*MILMIL +int64_t(s[2]-'0')*1000*MILMIL+int64_t(s[3]-'0')*100*MILMIL
+    		+int64_t(s[4]-'0')*10*MILMIL +int64_t(s[5]-'0')*MILMIL+int64_t(s[6]-'0')*100000*MIL
+    		+int64_t(s[7]-'0')*10000*MIL+int64_t(s[8]-'0')*1000*MIL+int64_t(s[9]-'0')*100*MIL
+    		+int64_t(s[10]-'0')*10*MIL+(s[11]-'0')*MIL+(s[12]-'0')*100000
+    		+(s[13]-'0')*10000+(s[14]-'0')*1000+(s[15]-'0')*100+(s[16]-'0')*10
+    		+(s[17]-'0');
+}
 
 static inline int64_t atoul_12(const char * const s){
     return int64_t(s[0]-'0')*100000000000
@@ -51,6 +63,10 @@ static inline int64_t atoul_5(const char * const s){
     return (s[0]-'0')*10000+(s[1]-'0')*1000+(s[2]-'0')*100+(s[3]-'0')*10+(s[4]-'0');
 }
 
+static inline int64_t atoul_4(const char * const s){
+    return (s[0]-'0')*1000+(s[1]-'0')*100+(s[2]-'0')*10+(s[3]-'0');
+}
+
 static inline int64_t atoul_1(const char * const s){
     return (s[0]-'0');
 }
@@ -69,10 +85,10 @@ struct bbo{
 };
 
 typedef struct top2{
-	int64_t bid1;
-	int64_t bidsize1;
-	int64_t ask1;
-	int64_t asksize1;
+	int64_t bid1; //buying value H1
+	int64_t bidsize1; //buying volume H1
+	int64_t ask1; //selling value H1
+	int64_t asksize1; //selling volume H1
 	int64_t bid2;
 	int64_t bidsize2;
 	int64_t ask2;
@@ -81,11 +97,11 @@ typedef struct top2{
 	int64_t total_asks;
 	int64_t tradeprice;
 	int64_t tradesize;
-	int64_t total_volume;
+	int64_t total_volume; //trader group for H1
 	int64_t exchange_time;
 	int64_t seq;	
-	char symbol[13];
-	char msg_type[3];
+	char symbol[13]; //derivatives id for H1
+	char msg_type[3]; 
 } top2;
 
 typedef struct tick{

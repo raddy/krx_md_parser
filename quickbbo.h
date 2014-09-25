@@ -9,6 +9,7 @@
 #include "a0parse.h"
 #include "b7parse.h"
 #include "a1parse.h"
+#include "h1parse.h"
 
 using namespace std;
 
@@ -23,6 +24,7 @@ __BEGIN_DECLS
 #define A0 12353
 #define A1 12609
 #define B7 14146
+#define H1 12616
 
 //Product Type Codes as ushort
 #define FUTURE 12592
@@ -48,6 +50,12 @@ static inline void parse_issue_code(const char * const s,top2 &res){
 	res.symbol[12] = 0;
 }
 
+static inline void parse_derivatives_id(const char * const s,top2 &res){
+	memcpy(res.symbol,s+sizeof(char)*21,sizeof(char)*11);
+	res.symbol[11] = 0;
+	res.symbol[12] = 0;
+}
+
 static inline int ic_is_elw(const char * s){
 	return s[0]=='K' && s[1] == 'R' && s[2] == 'A';
 }
@@ -62,7 +70,7 @@ static inline int market_type_cash(const char *s){
 	* Just parses B6s for now and 
 
 */
-static int parse_msg(const char *s,short exture_plus,top2 &result){
+static int parse_msg(const char *s,const short & exture_plus,top2 &result){
 	
 
 	//ignore non derivatives md for now
@@ -71,7 +79,7 @@ static int parse_msg(const char *s,short exture_plus,top2 &result){
 	short commodity_flag = (s[4] == '6');
 	short equity_flag = (s[4] == '1');
 
-	bool exture_p = bool(exture_plus);
+
 		
 	parse_msg_type(s,result);
 	
@@ -81,14 +89,14 @@ static int parse_msg(const char *s,short exture_plus,top2 &result){
 			switch(product_type(s)){
 				case FUTURE:
 					if (commodity_flag>0)
-						commodity_b6(s,exture_p,result);
+						commodity_b6(s,exture_plus,result);
 					else if (equity_flag>0)
 						return 0;
 					else
-						future_b6(s,exture_p,result);
+						future_b6(s,exture_plus,result);
 					return 1;
 				case OPTION:
-					option_b6(s,exture_p,result);
+					option_b6(s,exture_plus,result);
 					return 1;
 				default:
 					return 0;
@@ -98,12 +106,12 @@ static int parse_msg(const char *s,short exture_plus,top2 &result){
 			switch(product_type(s)){
 				case FUTURE:
 					if (commodity_flag>0)
-						commodity_g7(s,exture_p,result);
+						commodity_g7(s,exture_plus,result);
 					else
-						future_g7(s,exture_p,result);
+						future_g7(s,exture_plus,result);
 					return 1;
 				case OPTION:
-					option_g7(s,exture_p,result);
+					option_g7(s,exture_plus,result);
 					return 1;
 				default:
 					return 0;
@@ -113,17 +121,17 @@ static int parse_msg(const char *s,short exture_plus,top2 &result){
 			switch(product_type(s)){
 				case FUTURE:
 					if (commodity_flag>0)
-						commodity_a3(s,exture_p,result);
+						commodity_a3(s,exture_plus,result);
 					else if (equity_flag>0)
 						return 0;
 					else
-						future_a3(s,exture_p,result);
+						future_a3(s,exture_plus,result);
 					return 1;
 				case OPTION:
-					option_a3(s,exture_p,result);
+					option_a3(s,exture_plus,result);
 					return 1;
 				case ELW:
-					elw_a3(s,exture_p,result);
+					elw_a3(s,exture_plus,result);
 					return 1;
 				default:
 					return 0;
@@ -133,14 +141,14 @@ static int parse_msg(const char *s,short exture_plus,top2 &result){
 			switch(product_type(s)){
 				case FUTURE:
 					if (commodity_flag>0)
-						commodity_b2(s,exture_p,result);
+						commodity_b2(s,exture_plus,result);
 					else if (equity_flag>0)
 						return 0;
 					else
-						future_b2(s,exture_p,result);
+						future_b2(s,exture_plus,result);
 					return 1;
 				case OPTION:
-					option_b2(s,exture_p,result);
+					option_b2(s,exture_plus,result);
 					return 1;
 				default:
 					return 0;
@@ -149,7 +157,7 @@ static int parse_msg(const char *s,short exture_plus,top2 &result){
 			parse_issue_code(s,result);
 			switch(product_type(s)){
 				case ELW:
-					elw_b7(s,exture_p,result);
+					elw_b7(s,exture_plus,result);
 				default:
 					return 0;
 			}
@@ -158,24 +166,41 @@ static int parse_msg(const char *s,short exture_plus,top2 &result){
 			if (!ic_is_elw(result.symbol)){
 					return 0;
 			}
-			parse_a1_cash(s,exture_p,result);
+			parse_a1_cash(s,exture_plus,result);
 			return 4;
+		case H1:
+			parse_derivatives_id(s,result);			
+			switch(product_type(s)){
+				case FUTURE:
+					if (commodity_flag>0)
+						commodity_h1(s,exture_plus,result);
+					else if (equity_flag>0)
+						return 0;
+					else
+						future_h1(s,exture_plus,result);
+					return 9;
+				case OPTION:
+					option_h1(s,exture_plus,result);
+					return 9;
+				default:
+					return 0;
+			}
 		case A0:
 			if (equity_flag>0){
 				parse_issue_code(s,result);
 				if (!ic_is_elw(result.symbol)){
 					return 0;
 				}
-				parse_a0_cash(s,exture_p,result);
+				parse_a0_cash(s,exture_plus,result);
 				return 3;
 			}
 			parse_issue_code_a0(s,result);
 			switch(product_type(s)){
 				case FUTURE:
-					parse_a0(s,exture_p,result);
+					parse_a0(s,exture_plus,result);
 					break;
 				case OPTION:
-					parse_a0(s,exture_p,result);
+					parse_a0(s,exture_plus,result);
 					break;
 				default:
 					return 0;
